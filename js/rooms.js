@@ -7,18 +7,29 @@ import {
 import {
     collection,
     addDoc,
-    doc,
-    getDoc,
-    onSnapshot,
     query,
     where,
-    getDocs,
-    serverTimestamp
+    onSnapshot,
+    serverTimestamp,
+    orderBy,
+    doc,
+    getDoc
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
-let myUID = "";
 
-const roomList = document.getElementById("roomList");
+// ============================
+// 변수
+// ============================
+
+let currentUID = null;
+
+let currentRoomID = null;
+
+
+// HTML 요소
+
+const roomList =
+document.getElementById("roomList");
 
 const createRoomBtn =
 document.getElementById("createRoomBtn");
@@ -29,57 +40,65 @@ document.getElementById("createRoom");
 const roomModal =
 document.getElementById("roomModal");
 
+
+
+// ============================
 // 로그인 확인
+// ============================
 
 onAuthStateChanged(auth,(user)=>{
 
-    if(!user) return;
 
-    myUID=user.uid;
+    if(!user){
 
-    loadRooms();
-
-});
-
-
-// ----------------------
-// 채팅방 만들기 버튼
-// ----------------------
-
-createRoomBtn.onclick=()=>{
-
-    roomModal.style.display="flex";
-
-};
-
-
-// ----------------------
-// 모달 닫기
-// ----------------------
-
-document.querySelectorAll(".closeModal")
-.forEach(btn=>{
-
-    btn.onclick=()=>{
-
-        roomModal.style.display="none";
+        return;
 
     }
 
+
+    currentUID = user.uid;
+
+
+    loadRooms();
+
+
 });
 
 
-// ----------------------
+
+// ============================
+// 채팅방 생성 버튼
+// ============================
+
+if(createRoomBtn){
+
+    createRoomBtn.onclick=()=>{
+
+        roomModal.style.display="flex";
+
+    };
+
+}
+
+
+
+// ============================
 // 채팅방 생성
-// ----------------------
+// ============================
 
-createRoom.onclick=async()=>{
+if(createRoom){
 
-    const name=
+createRoom.onclick = async()=>{
+
+
+    const name =
     document.getElementById("roomName")
-    .value.trim();
+    .value
+    .trim();
 
-    if(name===""){
+
+
+    if(!name){
 
         alert("채팅방 이름을 입력하세요.");
 
@@ -87,110 +106,264 @@ createRoom.onclick=async()=>{
 
     }
 
-    await addDoc(
-        collection(db,"rooms"),
-        {
 
-            roomName:name,
 
-            owner:myUID,
+    try{
 
-            members:[myUID],
 
-            lastMessage:"",
+        await addDoc(
 
-            updatedAt:serverTimestamp(),
+            collection(db,"rooms"),
 
-            createdAt:serverTimestamp()
+            {
 
-        }
-    );
+                name:name,
 
-    document.getElementById("roomName").value="";
+                owner:currentUID,
 
-    roomModal.style.display="none";
+
+                members:[
+
+                    currentUID
+
+                ],
+
+
+                type:"group",
+
+
+                lastMessage:"",
+
+
+                createdAt:
+                serverTimestamp(),
+
+
+                updatedAt:
+                serverTimestamp()
+
+            }
+
+        );
+
+
+        alert("채팅방 생성 완료");
+
+
+        document.getElementById("roomName")
+        .value="";
+
+
+        roomModal.style.display="none";
+
+
+    }
+
+
+    catch(error){
+
+
+        console.error(error);
+
+
+        alert("채팅방 생성 실패");
+
+
+    }
+
 
 };
-
-
-// ----------------------
-// 내 채팅방 불러오기
-// ----------------------
-
-async function loadRooms(){
-
-    const q=query(
-
-        collection(db,"rooms"),
-
-        where("members","array-contains",myUID)
-
-    );
-
-    onSnapshot(q,(snapshot)=>{
-
-        roomList.innerHTML="";
-
-        if(snapshot.empty){
-
-            roomList.innerHTML=
-            "<p class='empty'>채팅방이 없습니다.</p>";
-
-            return;
-
-        }
-
-        snapshot.forEach(docSnap=>{
-
-            const room=docSnap.data();
-
-            const div=document.createElement("div");
-
-            div.className="room";
-
-            div.innerHTML=`
-
-                <h3>${room.roomName}</h3>
-
-                <small>${room.lastMessage}</small>
-
-            `;
-
-            div.onclick=()=>{
-
-                openRoom(docSnap.id);
-
-            };
-
-            roomList.appendChild(div);
-
-        });
-
-    });
 
 }
 
 
-// ----------------------
+
+// ============================
+// 내 채팅방 불러오기
+// ============================
+
+
+function loadRooms(){
+
+
+    const q = query(
+
+        collection(db,"rooms"),
+
+        where(
+
+            "members",
+
+            "array-contains",
+
+            currentUID
+
+        )
+
+    );
+
+
+
+    onSnapshot(q,(snapshot)=>{
+
+
+        roomList.innerHTML="";
+
+
+
+        if(snapshot.empty){
+
+
+            roomList.innerHTML=
+
+            `
+
+            <p class="empty">
+
+            채팅방이 없습니다.
+
+            </p>
+
+            `;
+
+
+            return;
+
+
+        }
+
+
+
+
+        snapshot.forEach((item)=>{
+
+
+            const room =
+            item.data();
+
+
+
+            const div =
+            document.createElement("div");
+
+
+
+            div.className="room";
+
+
+
+            div.innerHTML=
+
+            `
+
+            <h3>
+
+            ${room.name}
+
+            </h3>
+
+
+            <p>
+
+            ${room.lastMessage || "새 채팅"}
+
+            </p>
+
+
+            `;
+
+
+
+            div.onclick=()=>{
+
+
+                openRoom(
+
+                    item.id,
+
+                    room.name
+
+                );
+
+
+            };
+
+
+
+            roomList.appendChild(div);
+
+
+
+        });
+
+
+
+    });
+
+
+
+}
+
+
+
+// ============================
 // 채팅방 열기
-// ----------------------
+// ============================
 
-function openRoom(roomID){
 
-    document.getElementById("roomTitle")
-    .textContent="불러오는 중...";
+async function openRoom(roomID,name){
 
-    // chat.js에서 사용
-    window.currentRoom=roomID;
+
+    currentRoomID = roomID;
+
+
+
+    document
+    .getElementById("roomTitle")
+    .textContent=name;
+
+
+
+    window.currentRoomID =
+    roomID;
+
+
+
+    // chat.js에게 알림
 
     document.dispatchEvent(
 
-        new CustomEvent("roomChanged",{
+        new CustomEvent(
 
-            detail:roomID
+            "roomChanged",
 
-        })
+            {
+
+                detail:{
+
+                    roomID:roomID,
+
+                    name:name
+
+                }
+
+            }
+
+        )
 
     );
+
+
+}
+
+
+
+// ============================
+// 현재 방 가져오기
+// ============================
+
+export function getCurrentRoom(){
+
+    return currentRoomID;
 
 }
