@@ -8,13 +8,12 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 
 import {
-  getFirestore,
-  collection,
-  addDoc,
-  onSnapshot,
-  query,
-  orderBy
-} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCSrBXhL89-9raX3j8URfeXGHpl4Zg42iI",
@@ -60,7 +59,7 @@ document
   const roomName =
     document.getElementById("roomName").value;
 
-  if(!roomName) return;
+ if(!roomName.trim()) return;
 
   await addDoc(collection(db,"rooms"),{
     name: roomName
@@ -161,6 +160,16 @@ document
       user: currentUser.displayName,
       text: message,
       createdAt: Date.now()
+
+    document
+.getElementById("message")
+.addEventListener("keydown", (e) => {
+
+  if(e.key === "Enter"){
+    document.getElementById("sendBtn").click();
+  }
+
+});
     }
   );
 
