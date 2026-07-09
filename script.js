@@ -7,13 +7,15 @@ import {
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 
-import {
-  getAuth,
-  GoogleAuthProvider,
-  signInWithPopup,
-  onAuthStateChanged,
-  signOut
-} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+document
+.getElementById("logoutBtn")
+.addEventListener("click", async () => {
+
+  await signOut(auth);
+
+  location.reload();
+
+});
 
 const firebaseConfig = {
   apiKey: "AIzaSyCSrBXhL89-9raX3j8URfeXGHpl4Zg42iI",
