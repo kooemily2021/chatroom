@@ -705,6 +705,53 @@ main{
     .search{
 
         display:none;
+       /* 모바일 대응 */
+
+@media (max-width: 768px){
+
+    body{
+        overflow:hidden;
+    }
+
+
+    .container{
+        width:100%;
+        height:100vh;
+    }
+
+
+    .sidebar{
+        width:80px;
+    }
+
+
+    .chat{
+        flex:1;
+    }
+
+
+    .room h3{
+        font-size:14px;
+    }
+
+
+    #chatArea{
+        padding:10px;
+    }
+
+
+    .message{
+        max-width:80%;
+        font-size:14px;
+    }
+
+
+    #messageInput{
+        font-size:16px;
+    }
+
+
+}
 
     }
 
