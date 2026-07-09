@@ -89,10 +89,10 @@ loginBtn.onclick = async () => {
 
     catch(e){
 
-        console.error(e);
+    console.error("로그인 오류:", e);
+    alert(e.code + "\n" + e.message);
 
-        alert("로그인 실패");
-
+}
     }
 
 }
